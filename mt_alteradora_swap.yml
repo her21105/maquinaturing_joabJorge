@@ -1,0 +1,33 @@
+mt:
+  states: [q0, qf]
+  input_alphabet: [a, b]
+  tape_alphabet: [a, b, B]
+  initial_state: q0
+  accept_states: [qf]
+  transitions:
+    # En q0: si vemos 'a', escribimos 'b' y seguimos a la derecha
+    - state: q0
+      read: a
+      write: b
+      move: R
+      next: q0
+
+    # En q0: si vemos 'b', escribimos 'a' y seguimos a la derecha
+    - state: q0
+      read: b
+      write: a
+      move: R
+      next: q0
+
+    # En q0: al encontrar blanco, detenemos en aceptador
+    - state: q0
+      read: B
+      write: B
+      move: N
+      next: qf
+
+  inputs:
+    - "aaabb"
+    - "bbaaa"
+    - "ababab"
+    - "bbbbb"

@@ -1,0 +1,46 @@
+mt:
+  states: [q0, q1, qf]
+  input_alphabet: [a, b]
+  tape_alphabet: [a, b, B]
+  initial_state: q0
+  accept_states: [qf]
+  transitions:
+    # En q0: si leemos 'a', cambiamos a q1 (hemos visto una 'a' impar)
+    - state: q0
+      read: a
+      write: a
+      move: R
+      next: q1
+    # En q0: si leemos 'b', seguimos (no afecta la paridad de 'a')
+    - state: q0
+      read: b
+      write: b
+      move: R
+      next: q0
+    # En q0: si leemos blanco, hemos terminado con par de 'a' -> aceptar
+    - state: q0
+      read: B
+      write: B
+      move: N
+      next: qf
+
+    # En q1: si leemos 'a', volvemos a q0 (cerramos el par)
+    - state: q1
+      read: a
+      write: a
+      move: R
+      next: q0
+    # En q1: si leemos 'b', seguimos (no afecta la paridad de 'a')
+    - state: q1
+      read: b
+      write: b
+      move: R
+      next: q1
+    # En q1: si leemos blanco, terminamos con 'a' impar -> sin transición (rechazo)
+    # (al no haber transición para B en q1, la máquina se detiene y RECHAZA)
+
+  inputs:
+    - "aaaaa"      # 5 a's -> impar -> RECHAZA
+    - "aaaaaa"     # 6 a's -> par -> ACEPTA
+    - "bbaabb"     # 2 a's -> par -> ACEPTA
+    - "aaabbb"     # 3 a's -> impar -> RECHAZA
