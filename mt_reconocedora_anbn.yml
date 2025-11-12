@@ -1,0 +1,85 @@
+mt:
+  # Reconocedora del lenguaje { a^n b^n | n >= 1 } usando marcado a->X y b->Y
+  # Idea:
+  # - En q0: busca la primera 'a' sin marcar desde el inicio. Si la encuentra, la marca X y pasa a q1.
+  #          Si en q0 encuentra B (no quedan 'a' sin marcar), ACEPTA.
+  #          Si ve una 'b' antes de marcar una 'a', RECHAZA (no hay transición).
+  # - En q1: avanza hacia la derecha buscando la primera 'b' sin marcar; si la encuentra, la marca Y y va a q2.
+  #          Si llega a B sin encontrar 'b', RECHAZA (no hay transición).
+  # - En q2: regresa a la izquierda hasta el blanco de la izquierda (B), luego avanza una celda a la derecha y vuelve a q0.
+  #
+  # Estados:
+  #   q0  -> seleccionar 'a' (marcar X) o aceptar si ya no hay 'a' sin marcar
+  #   q1  -> emparejar con una 'b' (marcar Y)
+  #   q2  -> volver al comienzo (al primer símbolo después del B izquierdo)
+  #   qf  -> estado de aceptación
+
+  states: [q0, q1, q2, qf]
+  input_alphabet: [a, b]
+  tape_alphabet: [a, b, X, Y, B]
+  initial_state: q0
+  accept_states: [qf]
+
+  transitions:
+    # ---------- q0: buscar una 'a' sin marcar para convertirla en X ----------
+    # Saltar X e Y (marcas) mientras buscamos la próxima 'a'
+    - state: q0
+      read: [X, Y]
+      write: [X, Y]
+      move: R
+      next: q0
+
+    # Si encontramos 'a', la marcamos como X y vamos a buscar su 'b' en q1
+    - state: q0
+      read: a
+      write: X
+      move: R
+      next: q1
+
+    # Si llegamos a B sin encontrar una nueva 'a', significa que ya emparejamos todas: ACEPTAR
+    - state: q0
+      read: B
+      write: B
+      move: N
+      next: qf
+
+    # Nota: No hay transición (q0, b) -> RECHAZO implícito (b sin 'a' correspondiente a la izquierda)
+
+    # ---------- q1: buscar una 'b' sin marcar hacia la derecha ----------
+    # Saltamos sobre X, Y y 'a' mientras vamos a la derecha
+    - state: q1
+      read: [X, Y, a]
+      write: [X, Y, a]
+      move: R
+      next: q1
+
+    # Al encontrar la primera 'b' sin marcar, la marcamos como Y y pasamos a q2 (volver al inicio)
+    - state: q1
+      read: b
+      write: Y
+      move: L
+      next: q2
+
+    # Nota: No hay transición (q1, B) -> RECHAZO implícito (no existe 'b' para emparejar)
+
+    # ---------- q2: volver al comienzo (lado izquierdo) ----------
+    # Mientras no veamos el B izquierdo, seguimos yendo a la izquierda
+    - state: q2
+      read: [X, Y, a, b]
+      write: [X, Y, a, b]
+      move: L
+      next: q2
+
+    # Al ver el B izquierdo, avanzamos una celda a la derecha y volvemos a q0
+    - state: q2
+      read: B
+      write: B
+      move: R
+      next: q0
+
+  # Casos de prueba (>= 5 símbolos)
+  inputs:
+    - "aaabbb"      # ACEPTA (n=3)
+    - "aaaaabbbbb"  # ACEPTA (n=5)
+    - "aabbbb"      # RECHAZA (más b que a)
+    - "abbba"       # RECHAZA (no está en forma a^n b^n)

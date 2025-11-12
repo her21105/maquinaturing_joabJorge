@@ -1,12 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Simulador simple de Máquina de Turing (una cinta) basado en configuración YAML.
-
-Objetivo: ser lo más claro y didáctico posible, con comentarios que expliquen
-cada paso para tu video. No usa trucos raros: solo estados, cinta, y transiciones.
-
-Formato YAML esperado (ejemplo mínimo):
+Formato YAML esperado:
 ---------------------------------------
 mt:
   states: [q0, q1, qf]
@@ -24,19 +19,15 @@ mt:
     - "aabb"
     - "ab"
 
-Notas importantes del parser de transiciones:
+Notas :
 - Permitimos que 'read' y 'write' sean un string (caso simple) o listas paralelas.
   Si son listas, expandimos en varias transiciones (read[i] -> write[i]).
-- Esto hace que YAMLs compactos sean fáciles de escribir.
 - La máquina es de UNA cinta. El blanco por defecto es 'B'.
-
-Ejecución desde línea de comando:
 ---------------------------------
-python tm_simulator.py ruta/al/archivo.yml --max-steps 10000 --show-ids
-
 Salida:
 - Imprime por cada input todas las "descripciones instantáneas" (IDs) si --show-ids.
 - Al finalizar, indica si ACEPTA o RECHAZA.
+- Imprime la cinta final.(sin los blancos a los lados)
 """
 from __future__ import annotations
 import argparse
@@ -223,6 +214,8 @@ class TuringMachine:
         accepted = (state in self.accept_states)
         if steps >= max_steps and not accepted:
             print(f"[Aviso] Se alcanzó el máximo de pasos ({max_steps}) sin aceptar.")
+        final_tape = ''.join(tape.cells.get(i, 'B') for i in range(min(tape.cells.keys(), default=0),max(tape.cells.keys(), default=0) + 1))
+        print(f"Cinta final: {final_tape}")
         return accepted, steps
 
 # ---------------------------------------------------------------------------
@@ -293,18 +286,17 @@ def load_tm_from_yaml(path: str) -> Tuple[TuringMachine, List[str]]:
 # CLI
 # ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Simulador simple de Máquina de Turing (una cinta).")
-    parser.add_argument("yaml_path", help="Ruta al archivo YAML con la configuración de la MT.")
-    parser.add_argument("--max-steps", type=int, default=10000, help="Máximo de pasos por ejecución (default: 10000).")
-    parser.add_argument("--show-ids", action="store_true", help="Imprimir descripciones instantáneas paso a paso.")
-    args = parser.parse_args()
+    yaml_path = r"C:\Users\Joabh\Documents\GitHub\maquinaturing_joabJorge\mt_alteradora_swap.yml"
+    max_steps = 10000
+    show_ids = True
 
-    tm, inputs = load_tm_from_yaml(args.yaml_path)
+
+    tm, inputs = load_tm_from_yaml(yaml_path)
 
     for s in inputs:
         print("=" * 60)
         print(f"Input: {repr(s)}")
-        accepted, steps = tm.run(s, max_steps=args.max_steps, show_ids=args.show_ids)
+        accepted, steps = tm.run(s, max_steps=max_steps, show_ids=show_ids)
         print(f"Resultado: {'ACEPTA' if accepted else 'RECHAZA'} en {steps} paso(s).")
     print("=" * 60)
 
